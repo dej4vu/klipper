@@ -143,7 +143,7 @@ class PrinterProbe:
                                 % (epos[0], epos[1], epos[2]))
         return epos[:3]
 
-   
+
     def _move(self, coord, speed):
         self.printer.lookup_object('toolhead').manual_move(coord, speed)
     def _calc_mean(self, positions):
@@ -406,7 +406,7 @@ class ProbePointsHelper:
         toolhead.manual_move([None, None, self.horizontal_move_z], speed)
         # Check if done probing
         if len(self.results) >= len(self.probe_points):
-            toolhead.get_last_move_time() 
+            toolhead.get_last_move_time()
             res = self.finalize_callback(self.probe_offsets, self.results)
             if res != "retry":
                 return True
@@ -420,9 +420,9 @@ class ProbePointsHelper:
         return False
 
     def fast_probe_oneline(self, gcmd):
-        
+
         probe = self.printer.lookup_object('probe', None)
-        
+
         oneline_points = []
         start_point=list(self.probe_points[len(self.results)])
         end_point = []
@@ -432,8 +432,9 @@ class ProbePointsHelper:
         n_count=len(oneline_points)
         if n_count<=1:
             raise self.printer.config_error(
-                "Seems the mesh direction is not X, points count on x is %d" % (n_count))
-        end_point = list(oneline_points[n_count-1])  
+                "Seems the mesh direction is not X, points count on x is %d"
+                % (n_count))
+        end_point = list(oneline_points[n_count-1])
         print(oneline_points)
         print(start_point)
         print(end_point)
@@ -453,19 +454,21 @@ class ProbePointsHelper:
         line_time = toolhead.print_time-est_time
         start_time = est_time
         x_index = 0
-        
+
         while (not toolhead.special_queuing_state
                or toolhead.print_time >= est_time):
             if not toolhead.can_pause:
-                break                
-            est_time =toolhead.mcu.estimated_print_time(curtime)    
-            
-            if (est_time-start_time) >= x_index*line_time/(n_count-1):    
-                print(" est:%f,t:%f,dst:%f"%(est_time,(est_time-start_time),x_index*line_time/n_count))
+                break
+            est_time =toolhead.mcu.estimated_print_time(curtime)
+
+            if (est_time-start_time) >= x_index*line_time/(n_count-1):
+                print(" est:%f,t:%f,dst:%f"%(est_time,(est_time-start_time),
+                                             x_index*line_time/n_count))
                 pos = toolhead.get_position()
                 pos[0] = oneline_points[x_index][0]
                 pos[1] = oneline_points[x_index][1]
-                #pr = probe.mcu_probe.I2C_BD_receive_cmd.send([probe.mcu_probe.oid, "32".encode('utf-8')])
+                #pr = probe.mcu_probe.I2C_BD_receive_cmd.send(
+                # [probe.mcu_probe.oid, "32".encode('utf-8')])
                 #intd=int(pr['response'])
                 intd=probe.mcu_probe.BD_Sensor_Read(0)
                 pos[2]=pos[2]-intd
@@ -476,7 +479,7 @@ class ProbePointsHelper:
                 self.results.append(pos)
                 x_index += 1;
             curtime = toolhead.reactor.pause(curtime + 0.001)
-            
+
     def fast_probe(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
         probe = self.printer.lookup_object('probe', None)
@@ -489,7 +492,7 @@ class ProbePointsHelper:
         while len(self.results) < len(self.probe_points):
             self.fast_probe_oneline(gcmd)
         res = self.finalize_callback(self.probe_offsets, self.results)
-        print(self.results)        
+        print(self.results)
         self.results = []
         if res != "retry":
             return True
@@ -516,12 +519,12 @@ class ProbePointsHelper:
             raise gcmd.error("horizontal_move_z can't be less than"
                              " probe's z_offset")
         probe.multi_probe_begin()
-        
+
         if gcmd.get_command() == "BED_MESH_CALIBRATE":
              try:
                  if probe.mcu_probe.no_stop_probe is not None:
                      self.fast_probe(gcmd)
-                     probe.multi_probe_end() 
+                     probe.multi_probe_end()
                      return
              except AttributeError as e:
                  pass
@@ -531,7 +534,7 @@ class ProbePointsHelper:
                 break
             pos = probe.run_probe(gcmd)
             self.results.append(pos)
-        probe.multi_probe_end()  
+        probe.multi_probe_end()
     def _manual_probe_start(self):
         done = self._move_next()
         if not done:

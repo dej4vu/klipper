@@ -84,8 +84,8 @@ struct _step_probe{
     int steps_per_mm;
     int xoid;//oid for x stepper
     int x_count;
-	int x_dir;
-	int y_dir;
+    int x_dir;
+    int y_dir;
     int kinematics;//0:cartesian,1:corexy,2:delta
     ////for y
     int min_y;
@@ -115,7 +115,7 @@ int BD_i2c_init(uint32_t _sda,uint32_t _scl,uint32_t delays,uint32_t h_pose)
 {
     sda_pin=_sda;
     scl_pin =_scl;
-	homing_pose = h_pose;
+    homing_pose = h_pose;
     if(delays>0)
         delay_m=delays;
     sda_gpio=gpio_out_setup(sda_pin, 1);
@@ -127,16 +127,17 @@ int BD_i2c_init(uint32_t _sda,uint32_t _scl,uint32_t delays,uint32_t h_pose)
 
     stepx_probe.xoid=0;
     stepx_probe.y_oid=0;
-	endtime_adjust=0;
-	//output("BD_i2c_init mcuoid=%c sda:%c scl:%c dy:%c h_p:%c", oid_g,sda_pin,scl_pin,delay_m,homing_pose);
-	BD_i2c_write(1022); //reset BDsensor
+    endtime_adjust=0;
+    //output("BD_i2c_init mcuoid=%c sda:%c scl:%c dy:%c h_p:%c",
+    //  oid_g,sda_pin,scl_pin,delay_m,homing_pose);
+    BD_i2c_write(1022); //reset BDsensor
     return 1;
 }
 
 uint32_t nsecs_to_ticks_bd(uint32_t ns)
 {
     //return timer_from_us(ns * 1000) / 1000000;
-	return ns * (CONFIG_CLOCK_FREQ / 1000000);
+    return ns * (CONFIG_CLOCK_FREQ / 1000000);
 }
 
 
@@ -151,8 +152,8 @@ void ndelay_bd_c(uint32_t nsecs)
 void ndelay_bd(uint32_t nsecs)
 {
     int i=1;
-	while(i--)
-		ndelay_bd_c(nsecs);
+    while(i--)
+        ndelay_bd_c(nsecs);
 }
 
 unsigned short BD_Add_OddEven(unsigned short byte)
@@ -258,23 +259,24 @@ uint16_t BD_i2c_read(void)
     BD_i2c_stop();
     if (BD_Check_OddEven(b) && (b & 0x3FF) < 1020)
         b = (b & 0x3FF);
-	else
-		b=1024;
+    else
+        b=1024;
     if(b>1024)
         b=1024;
 #if 0
     sda_gpio_in=gpio_in_setup(sda_pin, 1);
-	b=0;
+    b=0;
     b=gpio_in_read(sda_gpio_in);
 #endif
 #if 0
 
     if((endtime_debug%8000)==0)
     {
-		output("BDread mcuoid=%c b:%c sda:%c scl:%c dy:%c", oid_g,b,sda_pin,scl_pin,delay_m);
+        output("BDread mcuoid=%c b:%c sda:%c scl:%c dy:%c",
+        oid_g,b,sda_pin,scl_pin,delay_m);
     }
-	endtime_debug++;
-#endif	
+    endtime_debug++;
+#endif
     BD_read_lock=0;
     return b;
 }
@@ -437,10 +439,10 @@ command_Z_Move_Live(uint32_t *args)
     else if(tmp[0]=='3')
     {
         step_adj[0].invert_dir=j;
-		if(j==1)
-			stepx_probe.x_dir=1;
-		else
-			stepx_probe.x_dir=-1;
+        if(j==1)
+            stepx_probe.x_dir=1;
+        else
+            stepx_probe.x_dir=-1;
     }
     else if(tmp[0]=='4')
     {
@@ -483,19 +485,20 @@ command_Z_Move_Live(uint32_t *args)
     else if(tmp[0]=='c')
     {/*
         stepx_probe.xoid=j;
-		if(stepx_probe.xoid){
-	        struct stepper *s = stepper_oid_lookup(j);
-	        uint32_t cur_stp=stepper_get_position(s);
-	        stepx_probe.steps_at_zero=cur_stp+
-	            stepx_probe.x_dir*(stepx_probe.steps_at_zero*stepx_probe.steps_per_mm)/1000;
-	        stepx_probe.min_x=stepx_probe.min_x*stepx_probe.steps_per_mm
-	            +stepx_probe.steps_per_mm;
-	        stepx_probe.max_x=stepx_probe.max_x*stepx_probe.steps_per_mm
-	            -stepx_probe.steps_per_mm;
-	       // output("Z_Move_L mcuoid=%c zero=%c", oid,stepx_probe.max_x);
-	        stepx_probe.x_count=0;
-		}
-		*/
+        if(stepx_probe.xoid){
+            struct stepper *s = stepper_oid_lookup(j);
+            uint32_t cur_stp=stepper_get_position(s);
+            stepx_probe.steps_at_zero=cur_stp+
+                stepx_probe.x_dir*(stepx_probe.steps_at_zero*
+                stepx_probe.steps_per_mm)/1000;
+            stepx_probe.min_x=stepx_probe.min_x*stepx_probe.steps_per_mm
+                +stepx_probe.steps_per_mm;
+            stepx_probe.max_x=stepx_probe.max_x*stepx_probe.steps_per_mm
+                -stepx_probe.steps_per_mm;
+           // output("Z_Move_L mcuoid=%c zero=%c", oid,stepx_probe.max_x);
+            stepx_probe.x_count=0;
+        }
+        */
     }
     else if(tmp[0]=='d')
     {
@@ -514,40 +517,42 @@ command_Z_Move_Live(uint32_t *args)
     {
         stepx_probe.y_steps_per_mm=j;
     }
-	else if(tmp[0]=='h')
+    else if(tmp[0]=='h')
     {
-		if(j==1)
-			stepx_probe.y_dir=1;
-		else
-			stepx_probe.y_dir=-1;
+        if(j==1)
+            stepx_probe.y_dir=1;
+        else
+            stepx_probe.y_dir=-1;
     }
     else if(tmp[0]=='i')
     {
     /*
         stepx_probe.y_oid=j;
-		if(stepx_probe.y_oid){
-	        struct stepper *s = stepper_oid_lookup(j);
-	        uint32_t cur_stp=stepper_get_position(s);
-	        stepx_probe.y_steps_at_zero=cur_stp+
-	            stepx_probe.y_dir*(stepx_probe.y_steps_at_zero*stepx_probe.y_steps_per_mm)/1000;
-		}
-		*/
+        if(stepx_probe.y_oid){
+            struct stepper *s = stepper_oid_lookup(j);
+            uint32_t cur_stp=stepper_get_position(s);
+            stepx_probe.y_steps_at_zero=cur_stp+
+                stepx_probe.y_dir*(stepx_probe.y_steps_at_zero*
+                stepx_probe.y_steps_per_mm)/1000;
+        }
+        */
     }
-	else if(tmp[0]=='j')
-	{
-		//timer_period_time=j;
-	}
-	else if(tmp[0]=='k')
-	{
-		timer_period_endstop=j;
-		endtime_adjust=0;
-	}
-	else if(tmp[0]=='m')
-	{
-		homing_pose=j; //0.01mm
-	}
+    else if(tmp[0]=='j')
+    {
+        //timer_period_time=j;
+    }
+    else if(tmp[0]=='k')
+    {
+        timer_period_endstop=j;
+        endtime_adjust=0;
+    }
+    else if(tmp[0]=='m')
+    {
+        homing_pose=j; //0.01mm
+    }
 
-    //output("Z_Move_L mcuoid=%c j=%c %c %c", oid,j,stepx_probe.xoid,stepx_probe.y_oid);
+    //output("Z_Move_L mcuoid=%c j=%c %c %c",
+    //oid,j,stepx_probe.xoid,stepx_probe.y_oid);
 
     sendf("Z_Move_Live_response oid=%c return_set=%*s", oid,i,(char *)args[2]);
 }
@@ -581,24 +586,27 @@ DECL_COMMAND(command_config_I2C_BD,
     if(sda_pin==0||scl_pin==0)
         return;
     if(timer_period_endstop>=100)
-		return;
-    if(endtime_adjust>(timer_read_time() + timer_from_us(timer_period_endstop*1000*2)))
-		endtime_adjust=timer_read_time() + timer_from_us(timer_period_endstop*1000);//us
-		
-	if(endtime_adjust>timer_read_time())
-	    return;
-	endtime_adjust=timer_read_time() + timer_from_us(timer_period_endstop*1000);//us
-    
+        return;
+    if(endtime_adjust>(timer_read_time() +
+     timer_from_us(timer_period_endstop*1000*2)))
+        endtime_adjust=timer_read_time() +
+         timer_from_us(timer_period_endstop*1000);//us
+
+    if(endtime_adjust>timer_read_time())
+        return;
+    endtime_adjust=timer_read_time() +
+     timer_from_us(timer_period_endstop*1000);//us
+
     tm=BD_i2c_read();
     if(tm<1023)
     {
         BD_Data=tm;
     }
-	else
-		BD_Data=0;
+    else
+        BD_Data=0;
 
     if(BD_Data<=homing_pose)
-		BD_Data=0;
+        BD_Data=0;
    // len=INT_to_String(BD_Data,data);
    // sendf("BD_Update oid=%c distance_val=%*s", oid_g,len,data);
 
