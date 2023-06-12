@@ -11,15 +11,33 @@
 #include "sched.h" // struct timer
 #include "trsync.h" // trsync_do_trigger
 
+////replace endstop.c
+#include "autoconf.h"
 struct endstop {
+    uint8_t type;
     struct timer time;
     struct gpio_in pin;
     uint32_t rest_time, sample_time, nextwake;
     struct trsync *ts;
     uint8_t flags, sample_count, trigger_count, trigger_reason;
 };
+uint16_t BD_Data=0;
+static uint8_t
+read_endstop_pin(struct endstop *e)
+{
+#if CONFIG_MACH_STM32F031
+    return gpio_in_read(e->pin);
+#else
+    if(e->type==2)// for Bed Distance sensor
+    {
+        return BD_Data?0:1;
+    }
+    else
+        return gpio_in_read(e->pin);
+#endif
+}
 
-enum { ESF_PIN_HIGH=1<<0, ESF_HOMING=1<<1 };
+   enum { ESF_PIN_HIGH=1<<0, ESF_HOMING=1<<1 };
 
 static uint_fast8_t endstop_oversample_event(struct timer *t);
 
@@ -28,7 +46,7 @@ static uint_fast8_t
 endstop_event(struct timer *t)
 {
     struct endstop *e = container_of(t, struct endstop, time);
-    uint8_t val = gpio_in_read(e->pin);
+    uint8_t val = read_endstop_pin(e);
     uint32_t nextwake = e->time.waketime + e->rest_time;
     if ((val ? ~e->flags : e->flags) & ESF_PIN_HIGH) {
         // No match - reschedule for the next attempt
@@ -45,7 +63,7 @@ static uint_fast8_t
 endstop_oversample_event(struct timer *t)
 {
     struct endstop *e = container_of(t, struct endstop, time);
-    uint8_t val = gpio_in_read(e->pin);
+    uint8_t val = read_endstop_pin(e);
     if ((val ? ~e->flags : e->flags) & ESF_PIN_HIGH) {
         // No longer matching - reschedule for the next attempt
         e->time.func = endstop_event;
@@ -68,6 +86,7 @@ command_config_endstop(uint32_t *args)
 {
     struct endstop *e = oid_alloc(args[0], command_config_endstop, sizeof(*e));
     e->pin = gpio_in_setup(args[1], args[2]);
+    e->type = args[2];
 }
 DECL_COMMAND(command_config_endstop, "config_endstop oid=%c pin=%c pull_up=%c");
 
@@ -110,6 +129,6 @@ command_endstop_query_state(uint32_t *args)
     irq_enable();
 
     sendf("endstop_state oid=%c homing=%c next_clock=%u pin_value=%c"
-          , oid, !!(eflags & ESF_HOMING), nextwake, gpio_in_read(e->pin));
+          , oid, !!(eflags & ESF_HOMING), nextwake, read_endstop_pin(e));
 }
 DECL_COMMAND(command_endstop_query_state, "endstop_query_state oid=%c");
